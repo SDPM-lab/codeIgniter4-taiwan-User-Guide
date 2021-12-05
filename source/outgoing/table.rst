@@ -250,7 +250,7 @@ HTML 表格類別
 
         :param    陣列    $template: 一個包含樣板值的關聯陣列
         :returns:    若成功回傳 true ， 失敗則回傳 false
-        :rtype:    布林
+        :rtype:    布林值
 
         允許你設定你的樣板。你可以提交一個完整或部分的樣板。
         ::

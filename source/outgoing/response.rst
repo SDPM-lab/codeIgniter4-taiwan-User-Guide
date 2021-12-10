@@ -2,38 +2,32 @@
 HTTP 響應
 ==============
 
-The Response class extends the :doc:`HTTP Message Class </incoming/message>` with methods only appropriate for
-a server responding to the client that called it.
+Response 類別透過僅適用於當伺服器回應呼叫它的客戶端的方法來擴展 :doc:`HTTP 訊息類別 </incoming/message>` 
 
 .. contents::
     :local:
     :depth: 2
 
-Working with the Response
+使用 Response
 =========================
 
-A Response class is instantiated for you and passed into your controllers. It can be accessed through
-``$this->response``. Many times you will not need to touch the class directly, since CodeIgniter takes care of
-sending the headers and the body for you. This is great if the page successfully created the content it was asked to.
-When things go wrong, or you need to send very specific status codes back, or even take advantage of the
-powerful HTTP caching, it's there for you.
+一個 Response 類別已經為你實例化並且傳入你的控制器。它可以透過 
+``$this->response`` 來訪問。由於 CodeIgniter 會替你傳送頁眉與主體，所以大多數的時候你並不需要直接接觸到類別。如果頁面成功的創建出它被要求創建的內容會是一件很棒的事。
+當出現了問題，或者你需要送回非常特定的狀態碼，又或者利用強大的 HTTP 快取，它都會隨時就緒。
 
-Setting the Output
+設定輸出
 ------------------
 
-When you need to set the output of the script directly, and not rely on CodeIgniter to automatically get it, you
-do it manually with the ``setBody`` method. This is usually used in conjunction with setting the status code of
-the response::
+當你需要直接設定腳本的輸出，並且不依靠 CodeIgniter 來自動取得它，你必須手動的透過 
+``setBody`` 方法來執行它。這經常與設定響應的狀態碼結合使用。::
 
     $this->response->setStatusCode(404)->setBody($body);
 
-The reason phrase ('OK', 'Created', 'Moved Permanently') will be automatically added, but you can add custom reasons
-as the second parameter of the ``setStatusCode()`` method::
+原因短語 ('OK', 'Created', 'Moved Permanently') 會被自動加入，但你也可以添加自定義的原因作為 ``setStatusCode()`` 方法的第二個參數::
 
     $this->response->setStatusCode(404, 'Nope. Not here.');
 
-You can set format an array into either JSON or XML and set the content type header to the appropriate mime with the
-``setJSON`` and ``setXML`` methods. Typically, you will send an array of data to be converted::
+你可以將陣列設定格式為 JSON 或 XML 並以 ``setJSON`` and ``setXML`` 方法設定內容型別頁眉成合適的 mime。通常，你會傳入一個陣列的待轉換資料::
 
     $data = [
         'success' => true,
@@ -44,82 +38,70 @@ You can set format an array into either JSON or XML and set the content type hea
     // or
     return $this->response->setXML($data);
 
-Setting Headers
+設定頁眉
 ---------------
 
-Often, you will need to set headers to be set for the response. The Response class makes this very simple to do,
-with the ``setHeader()`` method. The first parameter is the name of the header. The second parameter is the value,
-which can be either a string or an array of values that will be combined correctly when sent to the client.
-Using these functions instead of using the native PHP functions allows you to ensure that no headers are sent
-prematurely, causing errors, and makes testing possible.
+你經常會需要設置要為響應設置的頁眉。Response 類別透過 ``setHeader()`` 方法使這件事變得容易操作。
+第一個參數是頁眉的名字。第二個參數是值，它可以是當傳給客戶端時會被正確結合的字串或是一個陣列的值。
+使用這些函數而不是使用原生的 PHP 函數可以使你確保沒有頁眉會被過早的送出，產生錯誤，進而使測試成為可能。
 ::
 
     $response->setHeader('Location', 'http://example.com')
              ->setHeader('WWW-Authenticate', 'Negotiate');
 
-If the header exists and can have more than one value, you may use the ``appendHeader()`` and ``prependHeader()``
-methods to add the value to the end or beginning of the values list, respectively. The first parameter is the name
-of the header, while the second is the value to append or prepend.
+要是頁眉存在並且可以有多於一個值，你可以分別使用 ``appendHeader()`` 與 ``prependHeader()`` 
+方法在值列表的結尾或開始處增加值。第一個參數是頁眉的名字，第二個參數則是要附加或前置的值。
 ::
 
     $response->setHeader('Cache-Control', 'no-cache')
              ->appendHeader('Cache-Control', 'must-revalidate');
 
-Headers can be removed from the response with the ``removeHeader()`` method, which takes the header name as the only
-parameter. This is not case-sensitive.
+頁眉可以透過 ``removeHeader()`` 方法從響應中刪除，它只需頁眉名稱作為唯一的參數。這不區分大小寫。
 ::
 
     $response->removeHeader('Location');
 
-Force File Download
+強制檔案下載
 ===================
 
-The Response class provides a simple way to send a file to the client, prompting the browser to download the data
-to your computer. This sets the appropriate headers to make it happen.
+Response 類別提供了一個將檔案送到客戶端的簡單方法，提示瀏覽器將檔案下載到你的電腦。這會設置設置合適的頁眉使其發生。
 
-The first parameter is the **name you want the downloaded file to be named**, the second parameter is the
-file data.
+第一個參數是 **你想要已下載的檔案被命名的名字**，第二個參數是檔案資料。
 
-If you set the second parameter to null and ``$filename`` is an existing, readable
-file path, then its content will be read instead.
+如果你將第二個參數設為 null 但 ``$filename`` 是一個存在且可讀的檔案路徑，那它的內容還是會被讀取。
 
-If you set the third parameter to boolean true, then the actual file MIME type
-(based on the filename extension) will be sent, so that if your browser has a
-handler for that type - it can use it.
+如果你將第三個參數設為布林值 true，那檔案實際的 MIME 型別 
+(基於檔名擴充) 會被送出，所以如果你的瀏覽器有對應那個型別的處理程序-它便可以使用它。
 
-Example::
+範例::
 
     $data = 'Here is some text!';
     $name = 'mytext.txt';
     return $response->download($name, $data);
 
-If you want to download an existing file from your server you'll need to
-pass ``null`` explicitly for the second parameter::
+如果你想要從你的伺服器下載一個存在的檔案，你會需要在第二個參數明確的傳入 ``null`` ::
 
     // Contents of photo.jpg will be automatically read
     return $response->download('/path/to/photo.jpg', null);
 
-Use the optional ``setFileName()`` method to change the filename as it is sent to the client's browser::
+使用可選的 ``setFileName()`` 方法來更改已經被送到客戶端的瀏覽器檔案的檔名::
 
     return $response->download('awkwardEncryptedFileName.fakeExt', null)->setFileName('expenses.csv');
 
-.. note:: The response object MUST be returned for the download to be sent to the client. This allows the response
-    to be passed through all **after** filters before being sent to the client.
+.. note:: 響應物件必須必須回傳才能將下載發送給客戶端。這允許響應在傳給客戶端之前傳過所有 **after** 過濾器。
 
-HTTP Caching
+HTTP 快取
 ============
 
-Built into the HTTP specification are tools help the client (often the web browser) cache the results. Used correctly,
-this can lead to a huge performance boost to your application because it will tell the client that they don't need
-to contact the getServer at all since nothing has changed. And you can't get faster than that.
+內置於 HTTP 規範中的工具可以幫助客戶端(通常是網頁瀏覽器)快取結果。正確使用的話，可以使你的應用程式效能大大提升，因為它會通知客戶端他們不須聯繫
+ getServer 因為沒有東西被更改。而且你不能比這個再更快了。
 
-This are handled through the ``Cache-Control`` and ``ETag`` headers. This guide is not the proper place for a thorough
-introduction to all of the cache headers power, but you can get a good understanding over at
-`Google Developers <https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/http-caching>`_.
+這是透過 ``Cache-Control`` 與 ``ETag`` 頁眉處理。這個手冊不是一個完整解析所有快取頁眉能力的地方，但你可以透過
+`Google Developers <https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/http-caching>`_
+了解更多。
 
-By default, all response objects sent through CodeIgniter have HTTP caching turned off. The options and exact
-circumstances are too varied for us to be able to create a good default other than turning it off. It's simple
-to set the Cache values to what you need, through the ``setCache()`` method::
+在預設上，所有通過 CodeIgniter 發送的響應物件都會將 HTTP 快取關閉。它的選項與確切的情況太多變了，對我們來說與其創建一個好的默認設置不如將它關閉。
+透過 ``setCache()`` 方法可以輕易地將快取值設為你需要的值::
 
     $options = [
         'max-age'  => 300,
@@ -128,61 +110,50 @@ to set the Cache values to what you need, through the ``setCache()`` method::
     ];
     $this->response->setCache($options);
 
-The ``$options`` array simply takes an array of key/value pairs that are, with a couple of exceptions, assigned
-to the ``Cache-Control`` header. You are free to set all of the options exactly as you need for your specific
-situation. While most of the options are applied to the ``Cache-Control`` header, it intelligently handles
-the ``etag`` and ``last-modified`` options to their appropriate header.
+``$options`` 陣列只接受一個鍵/值對陣列，除了少數例外，這些鍵/值會被分配到 ``Cache-Control`` 頁眉。你可以自由地將所有的選項依照你特定的情況設置成你需要的樣子。
+當大多數的選項都被應用到 ``Cache-Control`` 頁眉，它會聰明的處理
+ ``etag`` 與 ``last-modified`` 選項到他們合適的頁眉。
 
-Content Security Policy
+內容安全策略
 =======================
 
-One of the best protections you have against XSS attacks is to implement a Content Security Policy on the site.
-This forces you to whitelist every single source of content that is pulled in from your site's HTML,
-including images, stylesheets, javascript files, etc. The browser will refuse content from sources that don't meet
-the whitelist. This whitelist is created within the response's ``Content-Security-Policy`` header and has many
-different ways it can be configured.
+其中一個對抗 XSS 攻擊最好的保護措施便是在網站上實施內容安全策略(CSP)。
+這會強制你將每一個從你網站的 HTML 拉入的內容來源放入白名單，包含圖片、樣式表、javascript 檔案等等。
+瀏覽器會拒絕來自非白名單的來源發出的內容。此白名單是由響應的 ``Content-Security-Policy`` 頁眉中創建的，並且它可以通過多種不同的方式配置。
 
-This sounds complex, and on some sites, can definitely be challenging. For many simple sites, though, where all content
-is served by the same domain (http://example.com), it is very simple to integrate.
+這聽起來很複雜，而且在某些網站，這確實是個挑戰。但是，對於很多簡單的網站，所有內容都由同一個網域提供服務
+(http://example.com)，要整合是非常輕鬆的。
 
-As this is a complex subject, this user guide will not go over all of the details. For more information, you should
-visit the following sites:
+由於這是一個複雜的主題，本用戶指南將不會詳細介紹所有細節。如果想知道更多資訊，請造訪下列網站:
 
 * `Content Security Policy main site <https://content-security-policy.com/>`_
 * `W3C Specification <https://www.w3.org/TR/CSP>`_
 * `Introduction at HTML5Rocks <https://www.html5rocks.com/en/tutorials/security/content-security-policy/>`_
 * `Article at SitePoint <https://www.sitepoint.com/improving-web-security-with-the-content-security-policy/>`_
 
-Turning CSP On
+開啟 CSP
 --------------
 
-By default, support for this is off. To enable support in your application, edit the ``CSPEnabled`` value in
-**app/Config/App.php**::
+在預設上，此項支援是關閉的。如果要在你的應用程式啟用此支援，請於
+**app/Config/App.php** 內編輯 ``CSPEnabled`` 值::
 
     public $CSPEnabled = true;
 
-When enabled, the response object will contain an instance of ``CodeIgniter\HTTP\ContentSecurityPolicy``. The
-values set in **app/Config/ContentSecurityPolicy.php** are applied to that instance, and if no changes are
-needed during runtime, then the correctly formatted header is sent and you're all done.
+啟用之後，響應物件會包含一個 ``CodeIgniter\HTTP\ContentSecurityPolicy`` 實例。在
+ **app/Config/ContentSecurityPolicy.php** 內設定的值會被應用到那個實例中，並且如果在運行時沒有需要更改的地方，那正確格式化的頁眉會被送出，你就成功了。
 
-With CSP enabled, two header lines are added to the HTTP response: a Content-Security-Policy header, with
-policies identifying content types or origins that are explicitly allowed for different
-contexts, and a Content-Security-Policy-Report-Only header, which identifies content types
-or origins that will be allowed but which will also be reported to the destination
-of your choice.
+當 CSP 已被啟用，兩個頁眉行會被加入 HTTP 響應:一個 Content-Security-Policy 頁眉，有著識別明確的被允許用於不同語境的內容型別或起源的策略，還有一個 Content-Security-Policy-Report-Only 頁眉，會識別被允許的內容型別或起源，但它同時也會被回報到你所選擇的目的地。
 
-Our implementation provides for a default treatment, changeable through the ``reportOnly()`` method.
-When an additional entry is added to a CSP directive, as shown below, it will be added
-to the CSP header appropriate for blocking or preventing. That can be overridden on a per
-call basis, by providing an optional second parameter to the adding method call.
 
-Runtime Configuration
+我們的實作會提供一個默認處理，可以透過 ``reportOnly()`` 方法更改。
+當一個額外的條目被添加到一個 CSP 指示，如下所示，它會被添加到適合阻擋或防止的 CSP 頁眉。它可以在每次呼叫的基礎上覆寫，透過提供一個自選的第二參數到添加方法的呼叫。
+
+運行組態設定
 ---------------------
 
-If your application needs to make changes at run-time, you can access the instance at ``$response->CSP``. The
-class holds a number of methods that map pretty clearly to the appropriate header value that you need to set.
-Examples are shown below, with different combinations of parameters, though all accept either a directive
-name or an array of them.::
+如果你的應用程式需要在運行時做更改，你可以存取在 ``$response->CSP`` 的實體。這類別包含許多方法可以清楚的導引到你需要設置的合適的頁眉值。
+下方提供了一些範例，儘管有不同的參數組合，但不論是指示名稱或他們自己的陣列都是全部被接受的。
+::
 
     // specify the default directive treatment
     $response->CSP->reportOnly(false);
@@ -213,26 +184,23 @@ name or an array of them.::
     $response->CSP->addStyleSrc('css.example.com');
     $response->CSP->addSandbox(['allow-forms', 'allow-scripts']);
 
-The first parameter to each of the "add" methods is an appropriate string value,
-or an array of them.
+對於每一個 "add" 方法，第一個參數都是一個適合的字串值或一個他們自己的陣列。
 
-The ``reportOnly`` method allows you to specify the default reporting treatment
-for subsequent sources, unless over-ridden. For instance, you could specify
-that youtube.com was allowed, and then provide several allowed but reported sources::
+``reportOnly`` 方法允許你指定對於後續來源的預設回報處理，除非它被覆寫。例如，你可以指定 youtube.com 是被允許的，
+然後提供數個被允許但被回報的來源::
 
     $response->addChildSrc('https://youtube.com'); // allowed
     $response->reportOnly(true);
     $response->addChildSrc('https://metube.com'); // allowed but reported
     $response->addChildSrc('https://ourtube.com',false); // allowed
 
-Inline Content
+行內內容
 --------------
 
-It is possible to set a website to not protect even inline scripts and styles on its own pages, since this might have
-been the result of user-generated content. To protect against this, CSP allows you to specify a nonce within the
-``<style>`` and ``<script>`` tags, and to add those values to the response's header. This is a pain to handle in real
-life, and is most secure when generated on the fly. To make this simple, you can include a ``{csp-style-nonce}`` or
-``{csp-script-nonce}`` placeholder in the tag and it will be handled for you automatically::
+將一個網頁設定成連自己頁面的行內腳本與樣式都不保護是可行的，因為這有可能是用戶生成內容的結果。為了防止這樣，CSP 允許你在
+``<style>`` 與 ``<script>`` 標籤中指定一個隨機數，並將這些值加到響應的頁眉。在現實生活中這很難處理，並且在動態生成時是最安全的。為了簡化這個，你可以在標籤中包含一個 ``{csp-style-nonce}`` 或
+``{csp-script-nonce}`` 置換符號，然後它將會自動幫你處理好
+::
 
     // Original
     <script {csp-script-nonce}>
@@ -249,13 +217,12 @@ life, and is most secure when generated on the fly. To make this simple, you can
         . . .
     </style>
 
-Class Reference
+類別參考
 ===============
 
-.. note:: In addition to the methods listed here, this class inherits the methods from the
-    :doc:`Message Class </incoming/message>`.
+.. note:: 除了被列出的方法之外，此類別也繼承 :doc:`Message Class </incoming/message>` 的方法。
 
-The methods provided by the parent class that are available are:
+父類別提供可用方法有：
 
 * :meth:`CodeIgniter\\HTTP\\Message::body`
 * :meth:`CodeIgniter\\HTTP\\Message::setBody`
@@ -278,75 +245,71 @@ The methods provided by the parent class that are available are:
 
     .. php:method:: getStatusCode()
 
-        :returns: The current HTTP status code for this response
+        :returns: 此響應現在的 HTTP 狀態碼
         :rtype: int
 
-        Returns the currently status code for this response. If no status code has been set, a BadMethodCallException
-        will be thrown::
+        回傳此響應目前的狀態碼。如果狀態碼沒有被設定，則會拋出 BadMethodCallException::
 
             echo $response->getStatusCode();
 
     .. php:method:: setStatusCode($code[, $reason=''])
 
-        :param int $code: The HTTP status code
-        :param string $reason: An optional reason phrase.
-        :returns: The current Response instance
+        :param int $code: HTTP 狀態碼
+        :param string $reason: 發生的原因，此為可選擇性參數。
+        :returns: 當前響應實體
         :rtype: ``CodeIgniter\HTTP\Response``
 
-        Sets the HTTP status code that should be sent with this response::
+        設定該被此響應送出的 HTTP 狀態碼::
 
             $response->setStatusCode(404);
-
-        The reason phrase will be automatically generated based upon the official lists. If you need to set your own
-        for a custom status code, you can pass the reason phrase as the second parameter::
+        
+        原因片語將根據官方列表自動產生。如果您需要設定自定義的狀態碼，可以將原因片語作為第二個參數傳入::
 
             $response->setStatusCode(230, "Tardis initiated");
 
     .. php:method:: getReasonPhrase()
 
-        :returns: The current reason phrase.
+        :returns: 發生當前狀態碼的原因．
         :rtype: string
-
-        Returns the current status code for this response. If not status has been set, will return an empty string::
+        
+        回傳此響應當前狀態碼。如果狀態沒有被設定，則回傳一個空字串::
 
             echo $response->getReasonPhrase();
 
     .. php:method:: setDate($date)
 
-        :param DateTime $date: A DateTime instance with the time to set for this response.
-        :returns: The current response instance.
+        :param DateTime $date: 一個設定此響應的時間之 DateTime 實體。
+        :returns: 當前響應實體。
         :rtype: ``CodeIgniter\HTTP\Response``
 
-        Sets the date used for this response. The ``$date`` argument must be an instance of ``DateTime``::
+        設定此響應的時間。 ``$date`` 參數必須是 ``DateTime`` 的實體::
 
             $date = DateTime::createFromFormat('j-M-Y', '15-Feb-2016');
             $response->setDate($date);
 
     .. php:method:: setContentType($mime[, $charset='UTF-8'])
 
-        :param string $mime: The content type this response represents.
-        :param string $charset: The character set this response uses.
-        :returns: The current response instance.
+        :param string $mime: 響應的內容型別。
+        :param string $charset: 此響應採用的字元編碼。
+        :returns: 當前響應實體。
         :rtype: ``CodeIgniter\HTTP\Response``
 
-        Sets the content type this response represents::
+        設定此響應的內容型別::
 
             $response->setContentType('text/plain');
             $response->setContentType('text/html');
             $response->setContentType('application/json');
-
-        By default, the method sets the character set to ``UTF-8``. If you need to change this, you can
-        pass the character set as the second parameter::
+        
+        在預設情況下，此方法採用 ``UTF-8`` 作為字元編碼。如果您需要修改，則可以將字元編碼作為第二個參數傳入。::
 
             $response->setContentType('text/plain', 'x-pig-latin');
 
     .. php:method:: noCache()
 
-        :returns: The current response instance.
+        :returns: 當前響應實體。
         :rtype: ``CodeIgniter\HTTP\Response``
-
-        Sets the ``Cache-Control`` header to turn off all HTTP caching. This is the default setting
-        of all response messages::
+        
+        設定 ``Cache-Control`` 標頭來關閉所有 HTTP 快取。這是所有響應訊息的預設設定::
 
             $response->noCache();
 
@@ -355,11 +318,11 @@ The methods provided by the parent class that are available are:
 
     .. php:method:: setCache($options)
 
-        :param array $options: An array of key/value cache control settings
-        :returns: The current response instance.
+        :param array $options: 一組控制快取設定的鍵值陣列
+        :returns: 當前響應實體。
         :rtype: ``CodeIgniter\HTTP\Response``
-
-        Sets the ``Cache-Control`` headers, including ``ETags`` and ``Last-Modified``. Typical keys are:
+        
+        設定 ``Cache-Control`` 標頭，包含 ``ETags`` 和 ``Last-Modified``。典型的鍵有：
 
         * etag
         * last-modified
@@ -370,51 +333,46 @@ The methods provided by the parent class that are available are:
         * must-revalidate
         * proxy-revalidate
         * no-transform
-
-        When passing the last-modified option, it can be either a date string, or a DateTime object.
+        
+        當傳入 last-modified 選項時，傳入值可以是一個日期字串或者是 DateTime 物件。
 
     .. php:method:: setLastModified($date)
 
-        :param string|DateTime $date: The date to set the Last-Modified header to
-        :returns: The current response instance.
+        :param string|DateTime $date: 設置 Last-Modified 標頭的時間
+        :returns: 當前響應實體。
         :rtype: ``CodeIgniter\HTTP\Response``
 
-        Sets the ``Last-Modified`` header. The ``$date`` object can be either a string or a ``DateTime``
-        instance::
+        設定 ``Last-Modified`` 標頭。 ``$date`` 物件可以是一個字串或者是 ``DateTime`` 實體::
 
             $response->setLastModified(date('D, d M Y H:i:s'));
             $response->setLastModified(DateTime::createFromFormat('u', $time));
 
     .. php:method:: send(): Response
 
-        :returns: The current response instance.
+        :returns: 當前響應實體。
         :rtype: ``CodeIgniter\HTTP\Response``
-
-        Tells the response to send everything back to the client. This will first send the headers,
-        followed by the response body. For the main application response, you do not need to call
-        this as it is handled automatically by CodeIgniter.
-
+        
+        通知響應將所有東西回送到客戶端。首先會送出標頭，再來才是響應的本體內容。
+        對於主要的應用程式響應，您不需要呼叫這個方法，因為會由 CodeIgniter 自動處理。
+        
     .. php:method:: setCookie($name = ''[, $value = ''[, $expire = ''[, $domain = ''[, $path = '/'[, $prefix = ''[, $secure = false[, $httponly = false[, $samesite = null]]]]]]]])
 
-        :param mixed $name: Cookie name or an array of parameters
-        :param string $value: Cookie value
-        :param int $expire: Cookie expiration time in seconds
-        :param string $domain: Cookie domain
-        :param string $path: Cookie path
-        :param string $prefix: Cookie name prefix
-        :param bool $secure: Whether to only transfer the cookie through HTTPS
-        :param bool $httponly: Whether to only make the cookie accessible for HTTP requests (no JavaScript)
-        :param string $samesite: The value for the SameSite cookie parameter. If set to ``''``, no SameSite attribute will be set on the cookie. If set to `null`, the default value from `config/App.php` will be used
-        :rtype: void
+        :param mixed $name: Cookie 名稱或者一組參數陣列
+        :param string $value: Cookie 值
+        :param int $expire: Cookie 過期時間，以秒為單位。
+        :param string $domain: Cookie 作用域
+        :param string $path: Cookie 路徑
+        :param string $prefix: Cookie 前綴名稱
+        :param bool $secure: 是否只通過 HTTPS 傳輸 cookie
+        :param bool $httponly: 是否只允許 HTTP 請求存取 cookie，而 JavaScript 不行存取。
+        :param string $samesite: 參數的值。如果該值被設為 ``''``，則不會在 cookie 上設定 SameSite 屬性。如果該值被設定為 `null`，則來自 `config/App.php` 的預設值會被使用。
+        :rtype: void  SameSite cookie
+        
+        設定包含您指定的值之 cookie。有兩種方式可以將訊息傳送給該方法來設定 cookie： 陣列或者獨立參數：
 
-        Sets a cookie containing the values you specify. There are two ways to
-        pass information to this method so that a cookie can be set: Array
-        Method, and Discrete Parameters:
-
-        **Array Method**
-
-        Using this method, an associative array is passed as the first
-        parameter::
+        **陣列方法**
+    
+        使用此方法，需要將一個鍵值陣列作為第一個參數傳入::
 
             $cookie = [
                 'name'   => 'The Cookie Name',
@@ -430,62 +388,52 @@ The methods provided by the parent class that are available are:
 
             $response->setCookie($cookie);
 
-        **Notes**
+        **注意事項**
 
-        Only the name and value are required. To delete a cookie set it with the
-        expiration blank.
+        只需要名稱和值。如果需要刪除 cookie，則將設置為過期即可。
+        過期時間採用 **秒數** 計時，將從當前時間開始計算。
+        不要設定一個具體的時間，而是你希望從*現在*開始 cookie 的有效時間。
+        如果過期時間被設為 0，則該cookie 只會在瀏覽器打開時有效，關閉時會被清除。
 
-        The expiration is set in **seconds**, which will be added to the current
-        time. Do not include the time, but rather only the number of seconds
-        from *now* that you wish the cookie to be valid. If the expiration is
-        set to zero the cookie will only last as long as the browser is open.
+        對於全站的 cookie，無論您的網站是如何被請求的，請將您的網址加到 **domain** 中，並以句點開始，例如：
+        
+        通常不需要該路徑，因為已經預設設定根路徑。
+        
+        當您需要避免與伺服器其他相同名稱 cookie 發生衝突時，才需要前綴。
 
-        For site-wide cookies regardless of how your site is requested, add your
-        URL to the **domain** starting with a period, like this:
-        .your-domain.com
+        當您需要加密 cookie 時，才需要將 secure 欄位設定為 ``true``。
 
-        The path is usually not needed since the method sets a root path.
+        SameSite 值用來控制 cookie 如何在網域和子網域中被共用。
+        合法的值有 'None', 'Lax', 'Strict', 或一個空白字串 ``''``。
+        如果該值被設定為空白字串，則會使用預設的 SameSite 屬性。
 
-        The prefix is only needed if you need to avoid name collisions with
-        other identically named cookies for your server.
+        **獨立參數**
 
-        The secure flag is only needed if you want to make it a secure cookie
-        by setting it to ``true``.
-
-        The SameSite value controls how cookies are shared between domains and sub-domains.
-        Allowed values are 'None', 'Lax', 'Strict' or a blank string ``''``.
-        If set to blank string, default SameSite attribute will be set.
-
-        **Discrete Parameters**
-
-        If you prefer, you can set the cookie by passing data using individual
-        parameters::
+        如果您願意，您也可以將資料作為獨立參數傳入來設定 cookie::
 
             $response->setCookie($name, $value, $expire, $domain, $path, $prefix, $secure, $httponly, $samesite);
 
     .. php:method:: deleteCookie($name = ''[, $domain = ''[, $path = '/'[, $prefix = '']]])
 
-        :param mixed $name: Cookie name or an array of parameters
-        :param string $domain: Cookie domain
-        :param string $path: Cookie path
-        :param string $prefix: Cookie name prefix
+        :param mixed $name: Cookie 名稱或一組參數陣列
+        :param string $domain: Cookie 網域
+        :param string $path: Cookie 路徑
+        :param string $prefix: Cookie 前綴名稱
         :rtype: void
 
-        Delete an existing cookie by setting its expiry to ``0``.
+        透過將現存的 cookie 的過期時間設為 ``0``，即可將其刪除。
 
-        **Notes**
+        **注意事項**
 
-        Only the name is required.
+        只需要名稱。
 
-        The prefix is only needed if you need to avoid name collisions with
-        other identically named cookies for your server.
+        當您需要避免與伺服器其他相同名稱 cookie 發生衝突時，才需要前綴。
 
-        Provide a prefix if cookies should only be deleted for that subset.
-        Provide a domain name if cookies should only be deleted for that domain.
-        Provide a path name if cookies should only be deleted for that path.
+        如果只該刪除該子集的 cookie，請提供前綴。
+        如果只該刪除該網域的 cookie，請提供網域名稱。
+        如果只該刪除該路徑的 cookie，請提供路徑名稱。
 
-        If any of the optional parameters are empty, then the same-named
-        cookie will be deleted across all that apply.
+        如果任何可選參數為空，則所有符合的同名 cookie 會被刪除。
 
         Example::
 
@@ -493,20 +441,19 @@ The methods provided by the parent class that are available are:
 
     .. php:method:: hasCookie($name = ''[, $value = null[, $prefix = '']])
 
-        :param mixed $name: Cookie name or an array of parameters
-        :param string $value: cookie value
-        :param string $prefix: Cookie name prefix
+        :param mixed $name: Cookie 名稱或一組參數陣列
+        :param string $value: cookie 值
+        :param string $prefix: Cookie 前綴名稱
         :rtype: bool
 
-        Checks to see if the Response has a specified cookie or not.
+        檢查該響應是否含有特定的 cookie。
 
-        **Notes**
+        **注意事項**
 
-        Only the name is required. If a prefix is specified, it will be prepended to the cookie name.
-
-        If no value is given, the method just checks for the existence of the named cookie.
-        If a value is given, then the method checks that the cookie exists, and that it
-        has the prescribed value.
+        只有名稱是必要的。如果有指定前綴，則它會被放在 cookie 名稱前面。
+        
+        如果 value 沒有被給定，則將只會檢查是否存在相對應名稱的 cookie。
+        如果 value 被給定，則不只檢查是否存在相對應名稱的 cookie，還會檢查是否含有給定的 value。
 
         Example::
 
@@ -514,12 +461,12 @@ The methods provided by the parent class that are available are:
 
     .. php:method:: getCookie($name = ''[, $prefix = ''])
 
-        :param string $name: Cookie name
-        :param string $prefix: Cookie name prefix
+        :param string $name: Cookie 名稱
+        :param string $prefix: Cookie 前綴名稱
         :rtype: ``Cookie|Cookie[]|null``
-
-        Returns the named cookie, if found, or ``null``.
-        If no name is given, returns the array of ``Cookie`` objects.
+        
+        如果有找到，則回傳相對應名稱的 cookie，否則回傳 ``null``。
+        如果沒有給定名稱，則回傳一個含有 ``Cookie`` 物件的陣列。
 
         Example::
 
@@ -529,6 +476,5 @@ The methods provided by the parent class that are available are:
 
         :rtype: ``Cookie[]``
 
-        Returns all cookies currently set within the Response instance.
-        These are any cookies that you have specifically specified to set during the current
-        request only.
+        回傳該響應實體中的所有 cookie。
+        這些只包含您專門指定在此請求中所設定的 cookie。
